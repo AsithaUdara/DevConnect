@@ -4,21 +4,27 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogOut } from 'lucide-react';
-import Modal from '@/components/ui/Modal';
-import LoginModalContent from '@/components/auth/LoginModalContent';
-import SignupModalContent from '@/components/auth/SignupModalContent';
-import { useRouter } from 'next/navigation'; // Use App Router navigation
+// Remove Modal imports from here, they belong in page.tsx
+// import Modal from '@/components/ui/Modal';
+// import LoginModalContent from '@/components/auth/LoginModalContent';
+// import SignupModalContent from '@/components/auth/SignupModalContent';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 
-export default function Navbar() {
+// Define Props
+interface NavbarProps {
+    onOpenLoginModal: () => void;
+    onOpenSignupModal: () => void;
+}
+
+// Use Props
+export default function Navbar({ onOpenLoginModal, onOpenSignupModal }: NavbarProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-    const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
-    const router = useRouter();
     const { user, loading } = useAuth();
+    const router = useRouter();
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -26,47 +32,23 @@ export default function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Modal Control Functions
-    const openLoginModal = () => { setIsSignupModalOpen(false); setIsLoginModalOpen(true); setIsMobileMenuOpen(false); };
-    const closeLoginModal = () => setIsLoginModalOpen(false);
-    const openSignupModal = () => { setIsLoginModalOpen(false); setIsSignupModalOpen(true); setIsMobileMenuOpen(false); };
-    const closeSignupModal = () => setIsSignupModalOpen(false);
-    const switchToLogin = () => { closeSignupModal(); setTimeout(openLoginModal, 150); };
-    const switchToSignup = () => { closeLoginModal(); setTimeout(openSignupModal, 150); };
-
-    // --- Handler called by LoginModalContent ---
-    const handleLoginSuccess = () => {
-        console.log("Login success reported to Navbar, navigating to dashboard...");
-        closeLoginModal();
-        router.push('/dashboard'); // <-- NAVIGATE TO DASHBOARD on successful login
-    }
-
-    // --- Handler called by SignupModalContent ---
-    const handleSignupCompleteAndSwitch = () => {
-        closeSignupModal();
-        openLoginModal(); // Open login modal after signup closes
-    }
-
-    // --- Handle Logout ---
     const handleLogout = async () => {
         setIsMobileMenuOpen(false);
-        try {
-            await signOut(auth);
-            console.log('Logout successful');
-            router.push('/'); // Redirect to home after logout
-        } catch (error) {
-            console.error("Logout Error:", error);
-        }
+        try { await signOut(auth); router.push('/'); }
+        catch (error) { console.error("Logout Error:", error); }
     };
 
-    // Styles
     const navbarClasses = `fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg transition-all duration-300 ${isScrolled ? 'shadow-sm border-b border-gray-100 py-3' : 'py-4 border-b border-transparent'}`;
     const primaryButtonClasses = "inline-flex items-center justify-center whitespace-nowrap bg-black text-white px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 ease-in-out hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2";
     const textLinkClasses = "text-sm font-medium text-gray-700 hover:text-black transition-colors duration-150 ease-in-out cursor-pointer";
     const logoutButtonClasses = "text-sm font-medium text-gray-700 hover:text-red-600 transition-colors duration-150 ease-in-out cursor-pointer";
 
+    const triggerLoginModal = () => { setIsMobileMenuOpen(false); onOpenLoginModal(); }
+    const triggerSignupModal = () => { setIsMobileMenuOpen(false); onOpenSignupModal(); }
+
+    // --- Wrap return in Fragment ---
     return (
-        <>
+        <> {/* <-- START FRAGMENT WRAPPER */}
             <header className={navbarClasses}>
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-14">
@@ -78,17 +60,15 @@ export default function Navbar() {
                             <Link href="/#testimonials" className={textLinkClasses}> Testimonials </Link>
                             {!loading && !user && (
                                 <>
-                                    <button onClick={openLoginModal} className={textLinkClasses}> Login </button>
-                                    <button onClick={openSignupModal} className={primaryButtonClasses}> Sign Up </button>
+                                    <button onClick={onOpenLoginModal} className={textLinkClasses}> Login </button>
+                                    <button onClick={onOpenSignupModal} className={primaryButtonClasses}> Sign Up </button>
                                 </>
                             )}
                             {!loading && user && (
-                                <>
+                                 <>
                                     <Link href="/dashboard" className={textLinkClasses}> Dashboard </Link>
-                                    <button onClick={handleLogout} className={logoutButtonClasses}>
-                                        <LogOut className="inline h-4 w-4 mr-1" /> Logout
-                                    </button>
-                                </>
+                                    <button onClick={handleLogout} className={logoutButtonClasses}> <LogOut className="inline h-4 w-4 mr-1" /> Logout </button>
+                                 </>
                             )}
                              {loading && <span className="text-sm text-gray-500 animate-pulse">Loading...</span>}
                         </nav>
@@ -108,8 +88,8 @@ export default function Navbar() {
                                 <Link href="/#testimonials" className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-md" onClick={() => setIsMobileMenuOpen(false)}> Testimonials </Link>
                                 {!loading && !user && (
                                      <>
-                                        <button onClick={openLoginModal} className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-md"> Login </button>
-                                        <button onClick={openSignupModal} className={`${primaryButtonClasses} w-full mt-3 text-center`}> Sign Up </button>
+                                        <button onClick={triggerLoginModal} className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-md"> Login </button>
+                                        <button onClick={triggerSignupModal} className={`${primaryButtonClasses} w-full mt-3 text-center`}> Sign Up </button>
                                      </>
                                 )}
                                  {!loading && user && (
@@ -125,14 +105,8 @@ export default function Navbar() {
                 </AnimatePresence>
             </header>
 
-            {/* Render Modals */}
-            <Modal isOpen={isLoginModalOpen} onClose={closeLoginModal} title="Log in to DevConnect">
-                <LoginModalContent onSwitchToSignup={switchToSignup} onLoginSuccess={handleLoginSuccess} />
-            </Modal>
-            <Modal isOpen={isSignupModalOpen} onClose={closeSignupModal} title="Create your DevConnect Account">
-                {/* Pass the correct handler */}
-                <SignupModalContent onSwitchToLogin={switchToLogin} onSignupSuccess={handleSignupCompleteAndSwitch} />
-            </Modal>
-        </>
+            
+
+        </> 
     );
 }
