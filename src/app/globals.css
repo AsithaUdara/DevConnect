@@ -1,0 +1,43 @@
+/* src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimal Base Styles */
+@layer base {
+  html {
+    @apply scroll-smooth; /* Smooth scrolling */
+    -webkit-tap-highlight-color: transparent; /* Disable tap highlight on mobile */
+  }
+
+  body {
+    @apply font-sans; /* Use font from Tailwind config */
+    @apply antialiased; /* Smooth fonts */
+    @apply bg-white text-black; /* Explicit base colors */
+    min-height: 100vh; /* Ensure body takes at least full height */
+    text-rendering: optimizeLegibility; /* Improve text rendering */
+  }
+
+  /* Optional: Ensure layout takes full height if needed */
+  /* html, body, #__next {
+    @apply h-full;
+  } */
+}
+
+/* Custom utility styles (like animation delays) can stay if needed */
+@layer utilities {
+   .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+   .animation-delay-4000 {
+      animation-delay: 4s;
+    }
+    /* Add scrollbar-hide utility */
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+}
