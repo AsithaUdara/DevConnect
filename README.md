@@ -2,6 +2,18 @@
 
 A modern web application built with Next.js that demonstrates authentication, database operations, email notifications, and responsive UI design.
 
+## Screenshots
+
+### Home Page
+![Home Page](./assets/devConnect1.jpeg)
+
+### Features Page
+![Features Page](./assets/devConnect2.jpeg)
+
+### Login Page to navigate dashboard
+![Dashboard Page](./assets/devConnect3.png)
+
+
 ## Features
 
 - **Authentication** with Firebase (Email/Password and Google Sign-in)
